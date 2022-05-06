@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+  
+ <listeners>
+  	<listener class-name="tct.utils.TestListener"></listener>
+  </listeners>
+  <parameter name="Reportname" value="My_test_Report"/>
+  
+  <test name="Test">
+  <parameter name="browser" value="chrome"/>
+    <classes>
+      <class name="tct.target.contract.sute"/>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
