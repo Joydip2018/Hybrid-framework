@@ -1,0 +1,36 @@
+if (browser.equalsIgnoreCase("chrome")) {
+            //System.setProperty("webdriver.chrome.driver", "src/test/resources/driverexes/chromedriver.exe");
+        	WebDriverManager.chromedriver().setup();
+            WebDriver original = new ChromeDriver();
+            WebDriverListener EventsListener=new MyListener();
+            TestBase.driver = new EventFiringDecorator(EventsListener).decorate(original);
+            TestBase.eventFiringWebDriver = new EventFiringDecorator(TestBase.EventsListener);
+            TestBase.driver.manage().deleteAllCookies();
+            TestBase.driver.get(this.prop.getProperty("url"));
+
+
+
+ public void onTestStart(final ITestResult iTestResult) {
+        TestListener.logger.info((Object)("I am in onTestStart method " + getTestMethodName(iTestResult) + " start"));
+        System.out.println("joy");
+        final Object testClass = iTestResult.getInstance();
+        System.out.println(testClass);
+        System.out.println("eventFiringWebDriver = "+eventFiringWebDriver);
+        Capabilities browserCapabilities = ((HasCapabilities) TestBase.driver).getCapabilities();
+        System.out.println("joy ************* "+TestBase.driver);
+        final String browserName =browserCapabilities.getBrowserName().toUpperCase();
+        final String browserVersion =browserCapabilities.getBrowserVersion().toUpperCase();
+        ExtentTestManager.startTest(iTestResult.getMethod().getMethodName(), "", String.valueOf(browserName) + "-" + browserVersion);
+        final StringBuilder sb = new StringBuilder();
+        Object[] parameters2;
+        for (int length = (parameters2 = iTestResult.getParameters()).length, i = 0; i < length; ++i) {
+            final Object strTemp = parameters2[i];
+            sb.append(String.valueOf(strTemp.toString()) + ", ");
+        }
+        String parameters = sb.toString();
+        if (parameters.endsWith(", ")) {
+            parameters = parameters.substring(0, parameters.length() - 2);
+        }
+        parameters = "(" + parameters + ")";
+        ExtentTestManager.getTest().info("Method parameters: " + parameters);
+    }
