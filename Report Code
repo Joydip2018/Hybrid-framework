@@ -1,1 +1,349 @@
+// 
+// Decompiled by Procyon v0.5.36
+// 
+
+package com.ipc.test.umsui.test.base;
+
+import java.util.List;
+import java.util.function.Function;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.ie.InternetExplorerOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+import com.ipc.sauce.functions.SauceConnector;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.support.PageFactory;
+import java.io.FileNotFoundException;
+import org.testng.annotations.AfterSuite;
+import org.apache.commons.io.FileUtils;
+import org.testng.annotations.BeforeSuite;
+import java.util.Iterator;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import java.io.IOException;
+import org.testng.Assert;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import java.io.InputStream;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.FileInputStream;
+import java.io.File;
+import java.util.ArrayList;
+import com.ipc.sauce.functions.Utility;
+import org.apache.log4j.LogManager;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.WebElement;
+import java.util.Properties;
+import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.WebDriver;
+import org.apache.log4j.Logger;
+import java.io.Serializable;
+
+public class TestBase implements Serializable
+{
+    private static final long serialVersionUID = 1L;
+    private static final Logger logger;
+    public static WebDriver driver;
+    public static EventFiringWebDriver eventFiringWebDriver;
+    public static String REMOTE_WEBDRIVER;
+    public long PAGE_LOAD_TIMEOUT;
+    public long IMPLICIT_WAIT;
+    public Properties prop;
+    public static String USERNAME;
+    public static String PASSWORD;
+    public static String TESTNAME;
+    public static String FilestoregePath;
+    protected utils varutils;
+    @FindBy(name = "userName")
+    WebElement username;
+    @FindBy(name = "password")
+    WebElement password;
+    @FindBy(name = "inputAgree")
+    WebElement inputagree;
+    @FindBy(id = "next")
+    WebElement next;
+    @FindBy(name = "signin")
+    WebElement signin;
+    @FindBy(name = "splash")
+    WebElement continueBtnSplashScreen;
+    public static long EXPLICIT_WAIT;
+    
+    static {
+        logger = LogManager.getLogger((Class)TestBase.class);
+        TestBase.REMOTE_WEBDRIVER = Utility.getEnvValue("REMOTE_WEBDRIVER");
+        TestBase.EXPLICIT_WAIT = 80L;
+    }
+    
+    @BeforeSuite
+    public void executeView() {
+        this.varutils = new utils();
+        final ArrayList<String> getview = new ArrayList<String>();
+        try {
+            System.out.println("Wait for while View query are executing...");
+            final File excelFile = new File("./ReportDBsetup/DBQuery.xlsx");
+            final FileInputStream fis = new FileInputStream(excelFile);
+            final XSSFWorkbook workbook = new XSSFWorkbook((InputStream)fis);
+            final XSSFSheet sheet = workbook.getSheet("View");
+            for (final Row row : sheet) {
+                final Iterator<Cell> cellIterator = (Iterator<Cell>)row.cellIterator();
+                cellIterator.hasNext();
+                while (cellIterator.hasNext()) {
+                    Cell cell = cellIterator.next();
+                    if (!cell.toString().isEmpty()) {
+                        cell = cellIterator.next();
+                        getview.add(cell.toString());
+                        cell = cellIterator.next();
+                    }
+                }
+            }
+            getview.remove(0);
+            workbook.close();
+            fis.close();
+        }
+        catch (IOException e) {
+            Assert.assertTrue(false, "View Query not fatch from xlsx file");
+        }
+        this.varutils.ReadViewfromexcel((ArrayList)getview);
+    }
+    
+    @AfterSuite
+    public void Copyfolder() {
+        final File basereportdir = new File(String.valueOf(System.getProperty("user.dir")) + "/src/test/resources/report/");
+        final File reportdir = new File(String.valueOf(System.getProperty("user.dir")) + "/src/SeleniumReport/");
+        try {
+            FileUtils.forceMkdir(reportdir);
+            FileUtils.copyDirectory(basereportdir, reportdir);
+        }
+        catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+    
+    public TestBase() {
+        this.PAGE_LOAD_TIMEOUT = 50L;
+        this.IMPLICIT_WAIT = 10L;
+        try {
+            this.prop = new Properties();
+            final FileInputStream ip = new FileInputStream("./src/test/resources/properties/config.properties");
+            this.prop.load(ip);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        catch (IOException e2) {
+            e2.printStackTrace();
+        }
+    }
+    
+    public void closeSingleApplication() {
+        TestBase.driver.quit();
+    }
+    
+    public void closeApplication() {
+    }
+    
+    public void doLogin() {
+    }
+    
+    public void doSingleLogin() {
+        if (TestBase.REMOTE_WEBDRIVER.equalsIgnoreCase("true")) {
+            TestBase.USERNAME = Utility.getEnvValue("username");
+            TestBase.PASSWORD = Utility.getEnvValue("password");
+        }
+        else {
+            TestBase.USERNAME = this.prop.getProperty("username");
+            TestBase.PASSWORD = this.prop.getProperty("password");
+        }
+        PageFactory.initElements(TestBase.driver, (Object)this);
+        this.username.click();
+        this.username.sendKeys(new CharSequence[] { (CharSequence)Keys.CONTROL, "a" });
+        this.username.sendKeys(new CharSequence[] { (CharSequence)Keys.BACK_SPACE });
+        this.username.sendKeys(new CharSequence[] { TestBase.USERNAME });
+        this.inputagree.click();
+        this.next.click();
+        this.password.click();
+        this.password.sendKeys(new CharSequence[] { (CharSequence)Keys.CONTROL, "a" });
+        this.password.sendKeys(new CharSequence[] { (CharSequence)Keys.BACK_SPACE });
+        this.password.sendKeys(new CharSequence[] { TestBase.PASSWORD });
+        this.signin.click();
+        this.continueBtnSplashScreen.click();
+    }
+    
+    public WebDriver getDriver() {
+        return TestBase.driver;
+    }
+    
+    public EventFiringWebDriver getEventFiringWebDriver() {
+        return TestBase.eventFiringWebDriver;
+    }
+    
+    public void setupApplication() throws Exception {
+        final String browser = this.prop.getProperty("browser");
+        this.setupApplication(browser);
+    }
+    
+    public void setupApplication(final String browser) throws Exception {
+    }
+    
+    public void setupSnigleApplication(final String browser) throws Exception {
+        TestBase.logger.info((Object)("***REMOTE_WEBDRIVER***" + TestBase.REMOTE_WEBDRIVER));
+        if (TestBase.REMOTE_WEBDRIVER.equalsIgnoreCase("true")) {
+            TestBase.driver = SauceConnector.openSauceBrowser(browser, this.prop, TestBase.TESTNAME);
+            TestBase.eventFiringWebDriver = new EventFiringWebDriver(TestBase.driver);
+            TestBase.driver = (WebDriver)TestBase.eventFiringWebDriver;
+            TestBase.driver.manage().window().maximize();
+            TestBase.driver.manage().timeouts().pageLoadTimeout(this.PAGE_LOAD_TIMEOUT, TimeUnit.SECONDS);
+            TestBase.driver.manage().timeouts().implicitlyWait(this.IMPLICIT_WAIT, TimeUnit.SECONDS);
+        }
+        else {
+            this.setupApplication(browser, "");
+        }
+    }
+    
+    public void setupApplication(final String browser, final String version) throws Exception {
+        final String driverPath = "src/test/resources/driverexes/";
+        final String currentDir = System.getProperty("user.dir");
+        final File dir = new File(String.valueOf(currentDir) + "/src/test/resources/seleniumdownloads");
+        final File reportdir = new File(String.valueOf(currentDir) + "/src/test/resources/report");
+        FileUtils.deleteDirectory(reportdir);
+        FileUtils.deleteDirectory(dir);
+        FileUtils.forceMkdir(dir);
+        FileUtils.forceMkdir(reportdir);
+        TestBase.FilestoregePath = String.valueOf(currentDir) + "\\src\\test\\resources\\seleniumdownloads\\";
+        if (browser.equalsIgnoreCase("chrome")) {
+            final HashMap<String, Object> chromePrefs = new HashMap<String, Object>();
+            chromePrefs.put("profile.default_content_settings.popups", 0);
+            chromePrefs.put("download.default_directory", TestBase.FilestoregePath);
+            final ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.setAcceptInsecureCerts(true);
+            chromeOptions.setExperimentalOption("prefs", (Object)chromePrefs);
+            System.setProperty("webdriver.chrome.driver", "src/test/resources/driverexes/chromedriver-2_42-68_70.exe");
+            TestBase.driver = (WebDriver)new ChromeDriver(chromeOptions);
+            TestBase.driver.manage().deleteAllCookies();
+            TestBase.driver.get(this.prop.getProperty("url"));
+        }
+        else if (browser.equalsIgnoreCase("firefox")) {
+            final FirefoxOptions firefoxOptions = new FirefoxOptions();
+            firefoxOptions.setAcceptInsecureCerts(true);
+            firefoxOptions.setCapability("marionette", true);
+            System.setProperty("webdriver.gecko.driver", "src/test/resources/driverexes/geckodriver-v0_23_0.exe");
+            (TestBase.driver = (WebDriver)new FirefoxDriver(firefoxOptions)).get(this.prop.getProperty("url"));
+        }
+        else if (browser.equalsIgnoreCase("edge")) {
+            final EdgeOptions edgeOptions = new EdgeOptions();
+            edgeOptions.setCapability("acceptSslCerts", true);
+            edgeOptions.setCapability("acceptInsecureCerts", true);
+            System.setProperty("webdriver.edge.driver", "src/test/resources/driverexes/MicrosoftWebDriver17134.exe");
+            TestBase.driver = (WebDriver)new EdgeDriver(edgeOptions);
+            TestBase.driver.navigate().to(this.prop.getProperty("urlForEdge_IE"));
+        }
+        else {
+            if (!browser.equalsIgnoreCase("ie")) {
+                throw new Exception("Browser is not correct");
+            }
+            final InternetExplorerOptions internetExplorerOptions = new InternetExplorerOptions();
+            internetExplorerOptions.setCapability("acceptSslCerts", true);
+            internetExplorerOptions.setCapability("ie.ensureCleanSession", true);
+            System.setProperty("webdriver.ie.driver", "src/test/resources/driverexes/IEDriverServer.exe");
+            (TestBase.driver = (WebDriver)new InternetExplorerDriver(internetExplorerOptions)).get(this.prop.getProperty("urlForEdge_IE"));
+        }
+        TestBase.eventFiringWebDriver = new EventFiringWebDriver(TestBase.driver);
+        TestBase.driver = (WebDriver)TestBase.eventFiringWebDriver;
+        TestBase.driver.manage().window().maximize();
+        TestBase.driver.manage().timeouts().pageLoadTimeout(this.PAGE_LOAD_TIMEOUT, TimeUnit.SECONDS);
+        TestBase.driver.manage().timeouts().implicitlyWait(this.IMPLICIT_WAIT, TimeUnit.SECONDS);
+    }
+    
+    public static WebElement waitUntil(final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, 5L);
+        wait.until((Function)ExpectedConditions.elementToBeClickable(element));
+        return element;
+    }
+    
+    public static void explicitlyWait(final WebDriver driver, final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(driver, 10L);
+        wait.until((Function)ExpectedConditions.elementToBeClickable(element));
+    }
+    
+    public static List<WebElement> waitUntillist(final List<WebElement> element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, 5L);
+        wait.until((Function)ExpectedConditions.visibilityOfAllElements((List)element));
+        return element;
+    }
+    
+    public void disablewait(final WebElement element) throws InterruptedException {
+        for (int max_Limit = 150, i = 0; i < max_Limit; ++i) {
+            Thread.sleep(1L);
+            final Boolean btn = element.isEnabled();
+            if (btn.equals(false)) {
+                break;
+            }
+        }
+    }
+    
+    public static WebElement waitUntilvisible(final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, 10L);
+        wait.until((Function)ExpectedConditions.visibilityOf(element));
+        return element;
+    }
+    
+    public void clickWait(final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, TestBase.EXPLICIT_WAIT);
+        try {
+            wait.until((Function)ExpectedConditions.elementToBeClickable(element));
+            System.out.println("Expected element is clicked");
+        }
+        catch (Exception e) {
+            System.err.println("Element is not visible ");
+            throw e;
+        }
+    }
+    
+    public void visibleWait(final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, TestBase.EXPLICIT_WAIT);
+        try {
+            wait.until((Function)ExpectedConditions.visibilityOf(element));
+            System.out.println("Expected element is clicked");
+        }
+        catch (Exception e) {
+            System.err.println("Element is not visible ");
+            throw e;
+        }
+    }
+    
+    public void displaywait(final WebElement element) throws InterruptedException {
+        for (int max_Limit = 150, i = 0; i < max_Limit; ++i) {
+            Thread.sleep(1L);
+            final Boolean btn = element.isDisplayed();
+            if (btn.equals(false)) {
+                break;
+            }
+        }
+    }
+    
+    public static WebElement waitInvisible(final WebElement element) {
+        final WebDriverWait wait = new WebDriverWait(TestBase.driver, 10L);
+        wait.until((Function)ExpectedConditions.invisibilityOf(element));
+        return element;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
